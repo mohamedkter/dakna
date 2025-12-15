@@ -1,0 +1,12 @@
+flutter_native_splash:
+  color: "#EAF7EF"
+  image: assets/images/logo_splash_screen.png
+  android_12:
+  # size of the image 960x960 and logo size 640 x 640
+    image: assets/images/logo_splash_screen.png
+    color: "#EAF7EF"
+    icon_background_color: "#EAF7EF"
+  fullscreen: true
+  android_gravity: center
+  ios_content_mode: scaleAspectFit
+  web_image_mode: contain
