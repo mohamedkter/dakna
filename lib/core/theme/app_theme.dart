@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'app_colors.dart';
 
 class AppTheme {
@@ -35,32 +36,32 @@ class AppTheme {
     ),
 
     // 📝 Text Theme
-    textTheme: const TextTheme(
+    textTheme:  TextTheme(
       headlineLarge: TextStyle(
         fontFamily: 'Tajawal',
-        fontSize: 24,
+        fontSize: 24.sp,
         fontWeight: FontWeight.bold,
         color: AppColors.textPrimary,
       ),
       headlineMedium: TextStyle(
         fontFamily: 'Tajawal',
-        fontSize: 20,
+        fontSize: 20.sp,
         fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
       ),
       bodyLarge: TextStyle(
         fontFamily: 'Tajawal',
-        fontSize: 18,
+        fontSize: 18.sp,
         color: AppColors.textPrimary,
       ),
       bodyMedium: TextStyle(
         fontFamily: 'Tajawal',
-        fontSize: 16,
+        fontSize: 16.sp,
         color: AppColors.textSecondary,
       ),
       bodySmall: TextStyle(
         fontFamily: 'Tajawal',
-        fontSize: 14,
+        fontSize: 14.sp,
         fontWeight: FontWeight.w600,
         color: Colors.white,
       ),

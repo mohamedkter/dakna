@@ -48,7 +48,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     return UserModel(
       id: supabase.auth.currentUser!.id,
       email: supabase.auth.currentUser!.email!,
-      name: supabase.auth.currentUser!.userMetadata?['full_name'] as String?,
+      name:
+          supabase.auth.currentUser!.userMetadata?['full_name'] as String ?? "",
+      token: authorization.accessToken,
+      picture: supabase.auth.currentUser!.userMetadata?['picture'],
     );
   }
 
@@ -68,6 +71,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         return UserModel(
           id: supabase.auth.currentUser!.id,
           email: supabase.auth.currentUser!.email ?? "",
+          name: supabase.auth.currentUser!.userMetadata?['full_name'],
+          token: supabase.auth.currentUser!.userMetadata?['full_name'],
+          picture: supabase.auth.currentUser!.userMetadata?['picture'],
         );
         // Authentication successful
       } else {
@@ -82,11 +88,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<UserModel> signInAsGuest() async {
-      final session = await supabase.auth.signInAnonymously();
-      final u = session.user!;
-      return UserModel(
-        id: u.id,
-        email: u.email ?? "",
-      );
+    final session = await supabase.auth.signInAnonymously();
+    final u = session.user!;
+    return UserModel(
+      id: u.id,
+      email: u.email ?? "",
+      name: "",
+      token: "",
+      picture: null,
+    );
   }
 }

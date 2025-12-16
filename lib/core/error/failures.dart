@@ -4,9 +4,13 @@ abstract class Failure {
 }
 
 class AuthFailure extends Failure {
-  const AuthFailure({required String message}) : super(message: message);
+  const AuthFailure({required super.message});
 }
 
 class NetworkFailure extends Failure {
-  const NetworkFailure({String message = "No internet connection"}) : super(message: message);
+  const NetworkFailure({super.message = ""});
+}
+
+class CacheFailure extends Failure {
+  const CacheFailure({super.message = ""});
 }
