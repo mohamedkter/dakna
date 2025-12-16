@@ -35,7 +35,7 @@ Future<void> init() async {
   );
 
   //! UseCases
-  sl.registerLazySingleton(() => SignInGoogle(sl()));
+  sl.registerLazySingleton(() => SignInWithGoogleUsecase(sl()));
   sl.registerLazySingleton(() => SignInFacebook(sl()));
   sl.registerLazySingleton(() => SignInGuest(sl()));
   sl.registerLazySingleton(() => GetCurrentUserUsecase(sl()));
@@ -55,7 +55,7 @@ Future<void> init() async {
     () => AuthRemoteDataSourceImpl(),
   );
   sl.registerLazySingleton<AuthLocalDataSource>(
-    () => AuthLocalDataSourceImpl(sharedPreferences: sl()),
+    () => AuthLocalDataSourceImpl(),
   );
 
   //! Core

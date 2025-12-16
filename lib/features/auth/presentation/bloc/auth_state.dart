@@ -1,4 +1,5 @@
 import 'package:dakna/features/auth/data/models/user_model.dart';
+import 'package:dakna/features/auth/domain/entities/user_entity.dart';
 import 'package:equatable/equatable.dart';
 
 
@@ -12,7 +13,7 @@ class AuthInitial extends AuthState {}
 class AuthLoading extends AuthState {}
 
 class Authenticated extends AuthState {
-  final UserModel user;
+  final UserEntity user;
 
   Authenticated(this.user);
 

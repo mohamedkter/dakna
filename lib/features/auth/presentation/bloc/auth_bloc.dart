@@ -10,7 +10,7 @@ import 'auth_event.dart';
 import 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  final SignInGoogle signInGoogle;
+  final SignInWithGoogleUsecase signInGoogle;
   final SignInFacebook signInFacebook;
   final SignInGuest signInGuest;
   final GetCurrentUserUsecase getCurrentUser;
@@ -31,9 +31,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<SignInAsGuestPressed>(_onSignInAsGuest);
     on<LogoutPressed>(_onLogout);
   }
-
-  // 🔹 App start (Splash logic)
-  Future<void> _onAppStarted(
+Future<void> _onAppStarted(
   AppStarted event,
   Emitter<AuthState> emit,
 ) async {
@@ -41,42 +39,26 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   final authResult = await isAuthenticated();
 
-  await authResult.fold(
-    (failure) async {
-      if (!emit.isDone) {
-        emit(Unauthenticated());
-      }
-    },
-    (isAuth) async {
-      if (!isAuth) {
-        if (!emit.isDone) {
-          emit(Unauthenticated());
-        }
-        return;
-      }
+  final isAuth = authResult.getOrElse(() => false);
 
-      final userResult = await getCurrentUser();
+  if (!isAuth) {
+    emit(Unauthenticated());
+    return;
+  }
 
-      userResult.fold(
-        (failure) {
-          if (!emit.isDone) {
-            emit(Unauthenticated());
-          }
-        },
-        (user) {
-          if (!emit.isDone) {
-            emit(
-              user != null
-                  ? Authenticated(user)
-                  : Unauthenticated(),
-            );
-          }
-        },
-      );
-    },
+  final userResult = await getCurrentUser();
+
+  userResult.fold(
+    (_) => emit(Unauthenticated()),
+    (user) => emit(
+      user != null
+          ? Authenticated(user)
+          : Unauthenticated(),
+    ),
   );
 }
-  Future<void> _onSignInWithGoogle(
+
+   Future<void> _onSignInWithGoogle(
     SignInWithGooglePressed event,
     Emitter<AuthState> emit,
   ) async {

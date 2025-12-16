@@ -1,31 +1,60 @@
+import 'dart:async';
+
 import 'package:dakna/core/localization/app_localizations.dart';
+import 'package:dakna/features/location/presentation/cubit/location_cubit.dart';
+import 'package:dakna/features/location/presentation/cubit/location_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:super_tooltip/super_tooltip.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final _controller = SuperTooltipController();
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<LocationCubit>().checkSavedLocation();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
 
-    return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            const HeaderSection(),
-            SizedBox(height: 20.h),
-            const CategoriesSection(),
-            SizedBox(height: 20.h),
-            const WelcomeBanner(),
-            SizedBox(height: 30.h),
-            const FreeDeliveryBanner(),
+    return BlocListener<LocationCubit, LocationState>(
+      listener: (context, state) {
+        if (state is LocationNotSelected) {
+          _controller.showTooltip();
+          showLocationSheet(context);
+        }
+      },
+      child: Scaffold(
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              HeaderSection(toolTipController: _controller),
+              SizedBox(height: 20.h),
+              const CategoriesSection(),
+              SizedBox(height: 20.h),
+              const WelcomeBanner(),
+              SizedBox(height: 30.h),
+              const FreeDeliveryBanner(),
 
-            //const SizedBox(height: 10),
-            // Shop Cards List
-            const SizedBox(height: 20),
-          ],
+              //const SizedBox(height: 10),
+              // Shop Cards List
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );
@@ -34,12 +63,13 @@ class HomePage extends StatelessWidget {
 
 // --- Header Section with Curved Bottom and Search Bar ---
 class HeaderSection extends StatelessWidget {
-  const HeaderSection({super.key});
+  final SuperTooltipController toolTipController;
+  const HeaderSection({super.key, required this.toolTipController});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 165.h, // مهم جدًا
+      height: 165.h,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
@@ -60,15 +90,33 @@ class HeaderSection extends StatelessWidget {
                       ),
                       const SizedBox(width: 6),
                       Expanded(
-                        child: Text(
-                          'حدد موقع التوصيل ',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                        child: SuperTooltip(
+                          controller: toolTipController,
+                          minimumOutsideMargin: 16,
+                          backgroundColor: Colors.black,
+                          content: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              "حدد موقع التوصيل غن طريق اختيار موقع مسجل  \nاو اضافة موقع جديد",
+                              softWrap: true,
+                              style: TextStyle(color: Colors.white),
+                            ),
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                          child: GestureDetector(
+                            onTap: () {
+                              showLocationSheet(context);
+                            },
+                            child: Text(
+                              'حدد موقع التوصيل ',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -81,26 +129,93 @@ class HeaderSection extends StatelessWidget {
           Positioned(
             left: 16,
             right: 16,
-            top: 80.h,
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'ابحث عن وجبات خفيفة',
-
-                prefixIcon: const Icon(Icons.search),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 5,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  borderSide: BorderSide.none,
-                ),
-              ),
+            top: 85.h,
+            child: AnimatedHintTextField(
+              hints: const [
+                'ابحث عن وجبات خفيفة',
+                'ابحث عن بيتزا ',
+                'ابحث عن برجر ',
+                'ابحث عن مشروبات',
+              ],
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class AnimatedHintTextField extends StatefulWidget {
+  final List<String> hints;
+
+  const AnimatedHintTextField({super.key, required this.hints});
+
+  @override
+  State<AnimatedHintTextField> createState() => _AnimatedHintTextFieldState();
+}
+
+class _AnimatedHintTextFieldState extends State<AnimatedHintTextField> {
+  late Timer _timer;
+  int _hintIndex = 0;
+  int _charIndex = 0;
+  String _currentHint = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _startTyping();
+  }
+
+  void _startTyping() {
+    _timer = Timer.periodic(const Duration(milliseconds: 120), (timer) {
+      final currentText = widget.hints[_hintIndex];
+
+      if (_charIndex < currentText.length) {
+        setState(() {
+          _charIndex++;
+          _currentHint = currentText.substring(0, _charIndex);
+        });
+      } else {
+        Future.delayed(const Duration(seconds: 1), _startDeleting);
+        timer.cancel();
+      }
+    });
+  }
+
+  void _startDeleting() {
+    _timer = Timer.periodic(const Duration(milliseconds: 80), (timer) {
+      if (_charIndex > 0) {
+        setState(() {
+          _charIndex--;
+          _currentHint = _currentHint.substring(0, _charIndex);
+        });
+      } else {
+        timer.cancel();
+        _hintIndex = (_hintIndex + 1) % widget.hints.length;
+        _startTyping();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      decoration: InputDecoration(
+        hintText: _currentHint,
+        prefixIcon: const Icon(Icons.search),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide.none,
+        ),
       ),
     );
   }
@@ -167,7 +282,6 @@ class CategoriesSection extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 8),
         children: [
           CategoryItem(title: 'المطاعم', icon: categoryImages[0]),
-
           CategoryItem(title: 'المتاجر', icon: categoryImages[1]),
           CategoryItem(title: 'بقالة', icon: categoryImages[2]),
           CategoryItem(title: 'الصحة والجمال', icon: categoryImages[3]),
@@ -419,4 +533,54 @@ class WavyTopClipper extends CustomClipper<Path> {
 
   @override
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+}
+
+class LocationSelectionSheet extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.all(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: Icon(Icons.my_location),
+            title: Text('استخدم موقعي الحالي'),
+            onTap: () {
+              // get current location
+            },
+          ),
+          Divider(),
+          // ...savedAddresses.map((e) => ListTile(
+          //       leading: Icon(Icons.location_on),
+          //       title: Text(e.name),
+          //       subtitle: Text(e.details),
+          //       onTap: () {
+          //         context.read<LocationCubit>().selectLocation(e);
+          //         Navigator.pop(context);
+          //       },
+          //     )),
+          Divider(),
+          ListTile(
+            leading: Icon(Icons.add_location_alt),
+            title: Text('إضافة موقع جديد'),
+            onTap: () {
+              // open map screen
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+void showLocationSheet(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: (_) => LocationSelectionSheet(),
+  );
 }

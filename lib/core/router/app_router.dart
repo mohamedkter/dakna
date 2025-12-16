@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:dakna/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:dakna/features/auth/presentation/bloc/auth_state.dart';
 import 'package:dakna/features/auth/presentation/pages/login_page.dart';
@@ -27,11 +28,13 @@ class AppRouter {
 
     // ⏳ Loading / Initial → Splash
     if (authState is AuthInitial || authState is AuthLoading) {
+      log("this is loading");
       return isSplash ? null : '/splash';
     }
 
     // ❌ Not authenticated → Login
     if (authState is Unauthenticated) {
+      log("Unauthenticated user");
       return isLogin ? null : '/login';
     }
 

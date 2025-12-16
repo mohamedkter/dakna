@@ -1,5 +1,6 @@
 import 'package:dakna/features/home/presentation/pages/home_page.dart';
 import 'package:dakna/features/home/presentation/pages/profile.dart';
+import 'package:dakna/features/orders/presentation/pages/orders_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -15,6 +16,7 @@ class _MainPageState extends State<MainPage> {
 
   final List<Widget> _pages = const [
     HomePage(),
+    OrdersPage(),
     ProfilePage(),
   ];
 
@@ -31,11 +33,15 @@ class _MainPageState extends State<MainPage> {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: 'Home',
+            label: 'الرئيسية',
+          ),
+           BottomNavigationBarItem(
+            icon: Icon(Icons.receipt_long),
+            label: 'طلباتك',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
-            label: 'Profile',
+            label: 'حسابك',
           ),
         ],
       ),
@@ -43,15 +49,3 @@ class _MainPageState extends State<MainPage> {
   }
 }
 
-class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: LogoutButton(),
-      ),
-    );
-  }
-}

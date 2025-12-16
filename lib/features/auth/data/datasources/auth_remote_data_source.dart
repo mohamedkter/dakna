@@ -72,7 +72,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           id: supabase.auth.currentUser!.id,
           email: supabase.auth.currentUser!.email ?? "",
           name: supabase.auth.currentUser!.userMetadata?['full_name'],
-          token: supabase.auth.currentUser!.userMetadata?['full_name'],
+          token:accessToken,
           picture: supabase.auth.currentUser!.userMetadata?['picture'],
         );
         // Authentication successful
@@ -95,7 +95,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       email: u.email ?? "",
       name: "",
       token: "",
-      picture: null,
+      picture: "",
     );
   }
 }
